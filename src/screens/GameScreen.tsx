@@ -4,6 +4,7 @@ import { PuzzleLevel, PuzzleImage } from "../data/puzzleData";
 import { theme } from "../config/theme";
 import { ImageTile, createImageTiles, shuffleImageTiles, isPuzzleComplete } from "../utils/imageUtils";
 import ImageTileComponent from "../components/ImageTile";
+import { PriorityQueue } from "../utils/priorityQueue";
 
 interface GameScreenProps {
   level: PuzzleLevel;
@@ -80,6 +81,108 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, image, onBack }) => {
     }
   };
 
+  const solvePuzzle = () => {
+    if (isComplete) return;
+
+    const targetState = Array.from({ length: tiles.length }, (_, i) => i + 1);
+    targetState[targetState.length - 1] = 0; // Last tile is blank
+
+    const initialState = tiles.map((tile) => tile.value);
+
+    const getNeighbors = (state: number[]): number[][] => {
+      const neighbors: number[][] = [];
+      const blankIndex = state.indexOf(0);
+      const row = Math.floor(blankIndex / level.cols);
+      const col = blankIndex % level.cols;
+
+      const directions = [
+        { row: -1, col: 0 }, // Up
+        { row: 1, col: 0 }, // Down
+        { row: 0, col: -1 }, // Left
+        { row: 0, col: 1 }, // Right
+      ];
+
+      for (const { row: dRow, col: dCol } of directions) {
+        const newRow = row + dRow;
+        const newCol = col + dCol;
+        if (newRow >= 0 && newRow < level.rows && newCol >= 0 && newCol < level.cols) {
+          const newIndex = newRow * level.cols + newCol;
+          const newState = [...state];
+          [newState[blankIndex], newState[newIndex]] = [newState[newIndex], newState[blankIndex]];
+          neighbors.push(newState);
+        }
+      }
+
+      return neighbors;
+    };
+
+    const heuristic = (state: number[]): number => {
+      let distance = 0;
+      for (let i = 0; i < state.length; i++) {
+        if (state[i] === 0) continue;
+        const targetIndex = state[i] - 1;
+        const currentRow = Math.floor(i / level.cols);
+        const currentCol = i % level.cols;
+        const targetRow = Math.floor(targetIndex / level.cols);
+        const targetCol = targetIndex % level.cols;
+        distance += Math.abs(currentRow - targetRow) + Math.abs(currentCol - targetCol);
+      }
+      return distance;
+    };
+
+    const aStar = (start: number[], goal: number[]): number[][] | null => {
+      const openSet = new PriorityQueue<{ state: number[]; path: number[][] }>((a: { priority: number }, b: { priority: number }) => a.priority < b.priority);
+      openSet.enqueue({ state: start, path: [] }, heuristic(start));
+
+      const closedSet = new Set<string>();
+
+      while (!openSet.isEmpty()) {
+        const { state, path } = openSet.dequeue();
+
+        if (state.toString() === goal.toString()) {
+          return path;
+        }
+
+        closedSet.add(state.toString());
+
+        for (const neighbor of getNeighbors(state)) {
+          if (closedSet.has(neighbor.toString())) continue;
+
+          const newPath = [...path, neighbor];
+          const priority = newPath.length + heuristic(neighbor);
+          openSet.enqueue({ state: neighbor, path: newPath }, priority);
+        }
+      }
+
+      return null;
+    };
+
+    const solutionPath = aStar(initialState, targetState);
+
+    if (solutionPath) {
+      const animateSolution = (index: number) => {
+        if (index >= solutionPath.length) return;
+
+        const newTiles = solutionPath[index].map((value: number, i: number) => {
+          // Find the original tile that should be at this position
+          const originalTile = tiles.find((tile) => tile.value === value);
+
+          return {
+            ...originalTile!,
+            id: i, // Keep the current position as ID
+            value,
+            isBlank: value === 0,
+          };
+        });
+
+        setTiles(newTiles);
+        setTimeout(() => animateSolution(index + 1), 500);
+      };
+
+      animateSolution(0);
+    }
+  };
+
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -144,6 +247,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, image, onBack }) => {
       <View style={styles.controls}>
         <TouchableOpacity style={styles.newGameButton} onPress={initializeGame}>
           <Text style={styles.newGameText}>New Game</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.solveButton} onPress={solvePuzzle}>
+          <Text style={styles.solveButtonText}>Solve</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -211,6 +317,18 @@ const styles = StyleSheet.create({
     ...theme.shadows.medium,
   },
   newGameText: {
+    ...theme.typography.h4,
+    color: theme.colors.textInverse,
+  },
+  solveButton: {
+    backgroundColor: theme.colors.danger,
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    alignItems: "center",
+    marginTop: theme.spacing.md,
+    ...theme.shadows.medium,
+  },
+  solveButtonText: {
     ...theme.typography.h4,
     color: theme.colors.textInverse,
   },

@@ -45,13 +45,11 @@ export const isPuzzleSolvable = (tiles: ImageTile[], level: PuzzleLevel): boolea
     }
   }
 
-  // For rectangular grids, the solvability depends on the grid dimensions
+  // For square grids, solvable if inversions + taxicab distance is even
   if (rows === cols) {
-    // Square grid: solvable if inversions + taxicab distance is even
     return (inversions + taxicabDistance) % 2 === 0;
   } else {
-    // Rectangular grid: all even permutations are solvable
-    // For rectangular grids, we need to check if the permutation is even
+    // For rectangular grids, solvable if inversions is even
     return inversions % 2 === 0;
   }
 };
@@ -105,21 +103,55 @@ export const createImageTiles = (level: PuzzleLevel, originalImageUrl: string, i
 export const shuffleImageTiles = (tiles: ImageTile[], level: PuzzleLevel): ImageTile[] => {
   let shuffled: ImageTile[];
   let attempts = 0;
-  const maxAttempts = 1000; // Prevent infinite loops
+  const maxAttempts = 100;
 
   do {
-    shuffled = [...tiles];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    // Create a deep copy of tiles
+    shuffled = tiles.map((tile) => ({ ...tile }));
+
+    // Perform random moves to shuffle
+    for (let i = 0; i < 50; i++) {
+      const blankIndex = shuffled.findIndex((tile) => tile.isBlank);
+      const blankRow = Math.floor(blankIndex / level.cols);
+      const blankCol = blankIndex % level.cols;
+
+      // Get possible moves
+      const possibleMoves = [];
+      const directions = [
+        { row: -1, col: 0 }, // Up
+        { row: 1, col: 0 }, // Down
+        { row: 0, col: -1 }, // Left
+        { row: 0, col: 1 }, // Right
+      ];
+
+      for (const { row: dRow, col: dCol } of directions) {
+        const newRow = blankRow + dRow;
+        const newCol = blankCol + dCol;
+        if (newRow >= 0 && newRow < level.rows && newCol >= 0 && newCol < level.cols) {
+          const newIndex = newRow * level.cols + newCol;
+          possibleMoves.push(newIndex);
+        }
+      }
+
+      // Make a random move
+      if (possibleMoves.length > 0) {
+        const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+        [shuffled[blankIndex], shuffled[randomMove]] = [shuffled[randomMove], shuffled[blankIndex]];
+      }
     }
+
     attempts++;
   } while (!isPuzzleSolvable(shuffled, level) && attempts < maxAttempts);
 
-  // If we couldn't find a solvable configuration, return the original (solved) state
+  // If we couldn't find a solvable configuration, return a simple known solvable state
   if (attempts >= maxAttempts) {
-    console.warn("Could not generate solvable puzzle after", maxAttempts, "attempts, returning solved state");
-    return tiles;
+    console.warn("Could not generate solvable puzzle, using fallback");
+    shuffled = tiles.map((tile) => ({ ...tile }));
+    // Make a few simple moves that we know create a solvable state
+    [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
+    if (shuffled.length > 3) {
+      [shuffled[1], shuffled[2]] = [shuffled[2], shuffled[1]];
+    }
   }
 
   return shuffled;
