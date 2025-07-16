@@ -1,8 +1,9 @@
 export interface PuzzleLevel {
   id: string;
   name: string;
-  size: number;
-  difficulty: "easy" | "medium" | "hard" | "brain-buster";
+  rows: number;
+  cols: number;
+  difficulty: "easy" | "medium" | "regular" | "hard" | "brain-buster";
   description: string;
 }
 
@@ -18,28 +19,40 @@ export const PUZZLE_LEVELS: PuzzleLevel[] = [
   {
     id: "easy",
     name: "Easy",
-    size: 2,
+    rows: 2,
+    cols: 2,
     difficulty: "easy",
     description: "2x2 grid - Perfect for beginners",
   },
   {
     id: "medium",
     name: "Medium",
-    size: 3,
+    rows: 2,
+    cols: 3,
     difficulty: "medium",
+    description: "2x3 grid - Moderate difficulty puzzle",
+  },
+  {
+    id: "regular",
+    name: "Regular",
+    rows: 3,
+    cols: 3,
+    difficulty: "regular",
     description: "3x3 grid - Classic sliding puzzle",
   },
   {
     id: "hard",
     name: "Hard",
-    size: 4,
+    rows: 4,
+    cols: 4,
     difficulty: "hard",
     description: "4x4 grid - For experienced players",
   },
   {
     id: "brain-buster",
     name: "Brain Buster",
-    size: 5,
+    rows: 5,
+    cols: 5,
     difficulty: "brain-buster",
     description: "5x5 grid - Ultimate challenge",
   },

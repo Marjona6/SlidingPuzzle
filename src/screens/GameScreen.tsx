@@ -30,12 +30,18 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, image, onBack }) => {
     );
   }
 
-  const tileSize = GAME_BOARD_SIZE / level.size;
+  // Calculate tile size based on the larger dimension to maintain square tiles
+  const maxDimension = Math.max(level.rows, level.cols);
+  const tileSize = GAME_BOARD_SIZE / maxDimension;
+
+  // Calculate actual board dimensions
+  const boardWidth = level.cols * tileSize;
+  const boardHeight = level.rows * tileSize;
 
   const initializeGame = () => {
     // Create image tiles with individual portions
     const imageTiles = createImageTiles(level, image.url, 800);
-    const shuffledTiles = shuffleImageTiles(imageTiles);
+    const shuffledTiles = shuffleImageTiles(imageTiles, level);
 
     setTiles(shuffledTiles);
     setMoves(0);
@@ -46,10 +52,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, image, onBack }) => {
 
   const canMoveTile = (tileIndex: number): boolean => {
     const blankIndex = tiles.findIndex((tile) => tile.isBlank);
-    const row = Math.floor(tileIndex / level.size);
-    const col = tileIndex % level.size;
-    const blankRow = Math.floor(blankIndex / level.size);
-    const blankCol = blankIndex % level.size;
+    const row = Math.floor(tileIndex / level.cols);
+    const col = tileIndex % level.cols;
+    const blankRow = Math.floor(blankIndex / level.cols);
+    const blankCol = blankIndex % level.cols;
 
     // Check if tile is adjacent to blank tile
     return (Math.abs(row - blankRow) === 1 && col === blankCol) || (Math.abs(col - blankCol) === 1 && row === blankRow);
@@ -107,10 +113,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, image, onBack }) => {
         </View>
       </View>
 
-      <View style={[styles.gameBoard, { width: GAME_BOARD_SIZE, height: GAME_BOARD_SIZE }]}>
+      <View style={[styles.gameBoard, { width: boardWidth, height: boardHeight }]}>
         {tiles.map((tile, index) => {
-          const row = Math.floor(index / level.size);
-          const col = index % level.size;
+          const row = Math.floor(index / level.cols);
+          const col = index % level.cols;
           const left = col * tileSize;
           const top = row * tileSize;
 
@@ -129,7 +135,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, image, onBack }) => {
               onPress={() => moveTile(index)}
               disabled={tile.isBlank}
             >
-              <ImageTileComponent tile={tile} tileSize={tileSize} boardSize={GAME_BOARD_SIZE} levelSize={level.size} isMovable={canMoveTile(index) && !tile.isBlank} />
+              <ImageTileComponent tile={tile} tileSize={tileSize} boardSize={GAME_BOARD_SIZE} levelSize={maxDimension} isMovable={canMoveTile(index) && !tile.isBlank} />
             </TouchableOpacity>
           );
         })}

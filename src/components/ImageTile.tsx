@@ -30,6 +30,9 @@ const ImageTileComponent: React.FC<ImageTileProps> = ({ tile, tileSize, boardSiz
 
   const imageUrl = tile.imageUrl.replace("?w=800&h=800&fit=crop", "?w=600&h=600&fit=crop&q=80");
 
+  // For rectangular grids, we need to calculate the full image size based on the levelSize
+  // and then position the image correctly for each tile
+  const fullImageSize = tileSize * levelSize;
   const offsetX = -tile.originalCol * tileSize;
   const offsetY = -tile.originalRow * tileSize;
 
@@ -50,8 +53,8 @@ const ImageTileComponent: React.FC<ImageTileProps> = ({ tile, tileSize, boardSiz
           style={[
             styles.tileImage,
             {
-              width: tileSize * levelSize,
-              height: tileSize * levelSize,
+              width: fullImageSize,
+              height: fullImageSize,
               left: offsetX,
               top: offsetY,
             },
