@@ -46,7 +46,6 @@ yarn-error.*
 *.env
 
 # iOS specific
-ios/
 ios/Pods/
 ios/build/
 ios/DerivedData/
@@ -56,7 +55,6 @@ ios/*.xcodeproj/project.xcworkspace/xcuserdata/
 ios/.xcode.env.local
 
 # Android specific
-android/
 android/app/build/
 android/build/
 android/.gradle/
