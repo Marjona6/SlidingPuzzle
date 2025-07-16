@@ -45,6 +45,11 @@ yarn-error.*
 .env.test
 *.env
 
+# Firebase and Google Services
+google-services.json
+GoogleService-Info.plist
+firebase-config.json
+
 # iOS specific
 ios/Pods/
 ios/build/

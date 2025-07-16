@@ -1,51 +1,55 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Alert, Dimensions } from "react-native";
+import { PuzzleLevel, PuzzleImage } from "../data/puzzleData";
+import { theme } from "../config/theme";
+import { ImageTile, createImageTiles, shuffleImageTiles, isPuzzleComplete } from "../utils/imageUtils";
+import ImageTileComponent from "../components/ImageTile";
 
-interface Tile {
-  id: number;
-  value: number;
-  isBlank: boolean;
+interface GameScreenProps {
+  level: PuzzleLevel;
+  image: PuzzleImage;
+  onBack: () => void;
 }
 
-const GameScreen: React.FC = () => {
-  const [tiles, setTiles] = useState<Tile[]>([]);
+const { width: screenWidth } = Dimensions.get("window");
+const GAME_BOARD_SIZE = Math.min(screenWidth - 40, 350); // Responsive board size
+
+const GameScreen: React.FC<GameScreenProps> = ({ level, image, onBack }) => {
+  const [tiles, setTiles] = useState<ImageTile[]>([]);
   const [moves, setMoves] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
 
+  // Add safety check
+  if (!level || !image) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Loading...</Text>
+      </View>
+    );
+  }
+
+  const tileSize = GAME_BOARD_SIZE / level.size;
+
   const initializeGame = () => {
-    const numbers = Array.from({ length: 8 }, (_, i) => i + 1);
-    const shuffled = shuffleArray([...numbers, 0]); // 0 represents the blank tile
+    // Create image tiles with individual portions
+    const imageTiles = createImageTiles(level, image.url, 800);
+    const shuffledTiles = shuffleImageTiles(imageTiles);
 
-    const newTiles = shuffled.map((value, index) => ({
-      id: index,
-      value,
-      isBlank: value === 0,
-    }));
-
-    setTiles(newTiles);
+    setTiles(shuffledTiles);
     setMoves(0);
     setIsComplete(false);
     setStartTime(new Date());
     setElapsedTime(0);
   };
 
-  const shuffleArray = (array: number[]): number[] => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
-
   const canMoveTile = (tileIndex: number): boolean => {
     const blankIndex = tiles.findIndex((tile) => tile.isBlank);
-    const row = Math.floor(tileIndex / 3);
-    const col = tileIndex % 3;
-    const blankRow = Math.floor(blankIndex / 3);
-    const blankCol = blankIndex % 3;
+    const row = Math.floor(tileIndex / level.size);
+    const col = tileIndex % level.size;
+    const blankRow = Math.floor(blankIndex / level.size);
+    const blankCol = blankIndex % level.size;
 
     // Check if tile is adjacent to blank tile
     return (Math.abs(row - blankRow) === 1 && col === blankCol) || (Math.abs(col - blankCol) === 1 && row === blankRow);
@@ -64,14 +68,9 @@ const GameScreen: React.FC = () => {
     setMoves((prev) => prev + 1);
 
     // Check if puzzle is complete
-    const isComplete = newTiles.every((tile, index) => {
-      if (index === 8) return tile.isBlank; // Last tile should be blank
-      return tile.value === index + 1;
-    });
-
-    if (isComplete) {
+    if (isPuzzleComplete(newTiles, level)) {
       setIsComplete(true);
-      Alert.alert("Congratulations!", `You solved the puzzle in ${moves + 1} moves!`, [{ text: "New Game", onPress: initializeGame }]);
+      Alert.alert("Congratulations!", `You solved the ${level.name} puzzle in ${moves + 1} moves!`, [{ text: "New Game", onPress: initializeGame }]);
     }
   };
 
@@ -83,7 +82,7 @@ const GameScreen: React.FC = () => {
 
   useEffect(() => {
     initializeGame();
-  }, []);
+  }, [level, image]);
 
   useEffect(() => {
     if (startTime && !isComplete) {
@@ -97,31 +96,50 @@ const GameScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Sliding Puzzle</Text>
+        <TouchableOpacity style={styles.backButton} onPress={onBack}>
+          <Text style={styles.backButtonText}>← Back</Text>
+        </TouchableOpacity>
+        <Text style={styles.title}>{image.name}</Text>
         <View style={styles.stats}>
+          <Text style={styles.statText}>Level: {level.name}</Text>
           <Text style={styles.statText}>Moves: {moves}</Text>
           <Text style={styles.statText}>Time: {formatTime(elapsedTime)}</Text>
         </View>
       </View>
 
-      <View style={styles.gameBoard}>
+      <View style={[styles.gameBoard, { width: GAME_BOARD_SIZE, height: GAME_BOARD_SIZE }]}>
         {tiles.map((tile, index) => {
-          const row = Math.floor(index / 3);
-          const col = index % 3;
-          const left = col * 98 + 5; // 96px tile + 2px gap
-          const top = row * 98 + 5; // 96px tile + 2px gap
+          const row = Math.floor(index / level.size);
+          const col = index % level.size;
+          const left = col * tileSize;
+          const top = row * tileSize;
 
           return (
-            <TouchableOpacity key={tile.id} style={[styles.tile, tile.isBlank && styles.blankTile, canMoveTile(index) && !tile.isBlank && styles.movableTile, { left, top }]} onPress={() => moveTile(index)} disabled={tile.isBlank}>
-              {!tile.isBlank && <Text style={styles.tileText}>{tile.value}</Text>}
+            <TouchableOpacity
+              key={tile.id}
+              style={[
+                styles.tileContainer,
+                {
+                  width: tileSize,
+                  height: tileSize,
+                  left,
+                  top,
+                },
+              ]}
+              onPress={() => moveTile(index)}
+              disabled={tile.isBlank}
+            >
+              <ImageTileComponent tile={tile} tileSize={tileSize} boardSize={GAME_BOARD_SIZE} levelSize={level.size} isMovable={canMoveTile(index) && !tile.isBlank} />
             </TouchableOpacity>
           );
         })}
       </View>
 
-      <TouchableOpacity style={styles.newGameButton} onPress={initializeGame}>
-        <Text style={styles.newGameText}>New Game</Text>
-      </TouchableOpacity>
+      <View style={styles.controls}>
+        <TouchableOpacity style={styles.newGameButton} onPress={initializeGame}>
+          <Text style={styles.newGameText}>New Game</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -129,73 +147,66 @@ const GameScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
-    padding: 20,
+    backgroundColor: theme.colors.background,
+    padding: theme.spacing.md,
   },
   header: {
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: theme.spacing.lg,
+  },
+  backButton: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    padding: theme.spacing.sm,
+    zIndex: 1,
+  },
+  backButtonText: {
+    ...theme.typography.body,
+    color: theme.colors.primary,
+    fontWeight: "600",
   },
   title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 10,
+    ...theme.typography.h2,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.sm,
+    textAlign: "center",
   },
   stats: {
     flexDirection: "row",
-    gap: 20,
+    gap: theme.spacing.md,
+    flexWrap: "wrap",
+    justifyContent: "center",
   },
   statText: {
-    fontSize: 16,
-    color: "#666",
+    ...theme.typography.bodySmall,
+    color: theme.colors.textSecondary,
   },
   gameBoard: {
-    width: 300,
-    height: 300,
-    backgroundColor: "#ddd",
-    borderRadius: 10,
-    padding: 5,
+    alignSelf: "center",
+    backgroundColor: theme.colors.gameBoardBackground,
+    borderRadius: theme.borderRadius.lg,
+    padding: 2,
     position: "relative",
+    ...theme.shadows.medium,
   },
-  tile: {
+  tileContainer: {
     position: "absolute",
-    width: 96,
-    height: 96,
-    backgroundColor: "#007AFF",
-    borderRadius: 8,
-    justifyContent: "center",
+  },
+  controls: {
+    marginTop: theme.spacing.xl,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  blankTile: {
-    backgroundColor: "transparent",
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  movableTile: {
-    backgroundColor: "#0056CC",
-  },
-  tileText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "white",
   },
   newGameButton: {
-    backgroundColor: "#34C759",
-    padding: 15,
-    borderRadius: 10,
-    marginTop: 30,
+    backgroundColor: theme.colors.secondary,
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
     alignItems: "center",
+    ...theme.shadows.medium,
   },
   newGameText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
+    ...theme.typography.h4,
+    color: theme.colors.textInverse,
   },
 });
 

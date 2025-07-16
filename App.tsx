@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import firebase from "@react-native-firebase/app";
-
-// Import the game screen directly
+import { PuzzleLevel, PuzzleImage } from "./src/data/puzzleData";
+import LevelSelectionScreen from "./src/screens/LevelSelectionScreen";
 import GameScreen from "./src/screens/GameScreen";
+
+type AppState = "level-selection" | "game";
 
 export default function App() {
   const [firebaseInitialized, setFirebaseInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [appState, setAppState] = useState<AppState>("level-selection");
+  const [selectedLevel, setSelectedLevel] = useState<PuzzleLevel | null>(null);
+  const [selectedImage, setSelectedImage] = useState<PuzzleImage | null>(null);
 
   useEffect(() => {
     const checkFirebase = async () => {
@@ -27,10 +32,22 @@ export default function App() {
     checkFirebase();
   }, []);
 
+  const handleLevelSelected = (level: PuzzleLevel, image: PuzzleImage) => {
+    setSelectedLevel(level);
+    setSelectedImage(image);
+    setAppState("game");
+  };
+
+  const handleBackToLevelSelection = () => {
+    setAppState("level-selection");
+    setSelectedLevel(null);
+    setSelectedImage(null);
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-      <GameScreen />
+      {appState === "level-selection" ? <LevelSelectionScreen onLevelSelected={handleLevelSelected} /> : selectedLevel && selectedImage && <GameScreen level={selectedLevel} image={selectedImage} onBack={handleBackToLevelSelection} />}
     </View>
   );
 }
