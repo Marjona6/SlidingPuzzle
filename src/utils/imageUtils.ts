@@ -24,9 +24,7 @@ export const createImageTiles = (level: PuzzleLevel, originalImageUrl: string, i
       const index = row * level.size + col;
       const value = index + 1; // 1-based values
 
-      // Create a unique URL for this tile position
-      // We'll use query parameters to identify the tile position
-      const tileImageUrl = `${originalImageUrl}?tile=${row}-${col}&size=${tileSize}`;
+      const tileImageUrl = originalImageUrl;
 
       tiles.push({
         id: index,
@@ -40,8 +38,10 @@ export const createImageTiles = (level: PuzzleLevel, originalImageUrl: string, i
   }
 
   // Replace the last tile with a blank tile
-  tiles[tiles.length - 1] = {
-    ...tiles[tiles.length - 1],
+  const lastIndex = tiles.length - 1;
+
+  tiles[lastIndex] = {
+    ...tiles[lastIndex],
     value: 0,
     isBlank: true,
     imageUrl: "",

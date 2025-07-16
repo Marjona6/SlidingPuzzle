@@ -28,16 +28,10 @@ const ImageTileComponent: React.FC<ImageTileProps> = ({ tile, tileSize, boardSiz
     );
   }
 
-  // Calculate the position of this tile's portion in the original image
-  // Use the tile's original position (originalRow, originalCol) to show the correct image portion
-  const originalImageSize = 800;
-  const imageTileSize = originalImageSize / levelSize;
+  const imageUrl = tile.imageUrl.replace("?w=800&h=800&fit=crop", "?w=600&h=600&fit=crop&q=80");
 
-  // Use the tile's original position in the image, not its current value
-  const imageX = -tile.originalCol * imageTileSize;
-  const imageY = -tile.originalRow * imageTileSize;
-
-  console.log(`Tile ${tile.value}: originalRow=${tile.originalRow}, originalCol=${tile.originalCol}, imageX=${imageX}, imageY=${imageY}`);
+  const offsetX = -tile.originalCol * tileSize;
+  const offsetY = -tile.originalRow * tileSize;
 
   return (
     <View
@@ -52,14 +46,14 @@ const ImageTileComponent: React.FC<ImageTileProps> = ({ tile, tileSize, boardSiz
     >
       <View style={styles.imageContainer}>
         <Image
-          source={{ uri: tile.imageUrl.split("?")[0] }} // Remove query params for actual image URL
+          source={{ uri: imageUrl }}
           style={[
             styles.tileImage,
             {
-              width: originalImageSize,
-              height: originalImageSize,
-              left: imageX,
-              top: imageY,
+              width: tileSize * levelSize,
+              height: tileSize * levelSize,
+              left: offsetX,
+              top: offsetY,
             },
           ]}
           resizeMode="cover"
@@ -89,7 +83,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: "100%",
     height: "100%",
-    overflow: "hidden",
+    // Removed overflow: "hidden" to test if that's the issue
     borderRadius: theme.borderRadius.md,
   },
   tileImage: {
