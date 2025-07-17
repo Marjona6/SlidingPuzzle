@@ -1,60 +1,52 @@
 export interface PuzzleLevel {
   id: string;
   name: string;
+  description: string;
   rows: number;
   cols: number;
-  difficulty: "easy" | "medium" | "regular" | "hard" | "brain-buster";
-  description: string;
+  difficulty: "easy" | "medium" | "hard" | "expert";
 }
 
 export interface PuzzleImage {
   id: string;
   name: string;
-  url: string;
   thumbnail: string;
-  category: "nature" | "animals" | "abstract" | "landscapes";
+  fullImage: string;
+  category: string;
 }
 
 export const PUZZLE_LEVELS: PuzzleLevel[] = [
   {
-    id: "easy",
+    id: "easy-3x3",
     name: "Easy",
-    rows: 2,
-    cols: 2,
-    difficulty: "easy",
-    description: "2x2 grid - Perfect for beginners",
-  },
-  {
-    id: "medium",
-    name: "Medium",
-    rows: 2,
-    cols: 3,
-    difficulty: "medium",
-    description: "2x3 grid - Moderate difficulty puzzle",
-  },
-  {
-    id: "regular",
-    name: "Regular",
+    description: "Perfect for beginners",
     rows: 3,
     cols: 3,
-    difficulty: "regular",
-    description: "3x3 grid - Classic sliding puzzle",
+    difficulty: "easy",
   },
   {
-    id: "hard",
-    name: "Hard",
+    id: "medium-4x4",
+    name: "Medium",
+    description: "A good challenge",
     rows: 4,
     cols: 4,
-    difficulty: "hard",
-    description: "4x4 grid - For experienced players",
+    difficulty: "medium",
   },
   {
-    id: "brain-buster",
-    name: "Brain Buster",
+    id: "hard-5x5",
+    name: "Hard",
+    description: "For experienced players",
     rows: 5,
     cols: 5,
-    difficulty: "brain-buster",
-    description: "5x5 grid - Ultimate challenge",
+    difficulty: "hard",
+  },
+  {
+    id: "expert-6x6",
+    name: "Expert",
+    description: "Ultimate challenge",
+    rows: 6,
+    cols: 6,
+    difficulty: "expert",
   },
 ];
 
@@ -62,73 +54,65 @@ export const PUZZLE_IMAGES: PuzzleImage[] = [
   {
     id: "animals-cat",
     name: "Black & White Cat",
-    url: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&h=800&fit=crop",
-    thumbnail: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&h=200&fit=crop",
+    fullImage: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&h=800&fit=crop",
+    thumbnail: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&h=300&fit=crop",
+    category: "animals",
+  },
+  {
+    id: "animals-elephant",
+    name: "Elephant Portrait",
+    fullImage: "https://images.unsplash.com/photo-1549366021-9f761d450615?w=800&h=800&fit=crop",
+    thumbnail: "https://images.unsplash.com/photo-1549366021-9f761d450615?w=300&h=300&fit=crop",
     category: "animals",
   },
   {
     id: "nature-1",
-    name: "Forest Path",
-    url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=800&fit=crop",
-    thumbnail: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200&h=200&fit=crop",
+    name: "Mountain Landscape",
+    thumbnail: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop",
+    fullImage: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=800&fit=crop",
     category: "nature",
   },
   {
     id: "nature-2",
-    name: "Mountain Lake",
-    url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=800&fit=crop",
-    thumbnail: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=200&fit=crop",
+    name: "Forest Path",
+    thumbnail: "https://images.unsplash.com/photo-1623967680551-3e4694e2c9ad?w=300&h=300&fit=crop",
+    fullImage: "https://images.unsplash.com/photo-1623967680551-3e4694e2c9ad?w=800&h=800&fit=crop",
     category: "nature",
   },
   {
-    id: "animals-1",
-    name: "Lion Portrait",
-    url: "https://images.unsplash.com/photo-1549366021-9f761d450615?w=800&h=800&fit=crop",
-    thumbnail: "https://images.unsplash.com/photo-1549366021-9f761d450615?w=200&h=200&fit=crop",
-    category: "animals",
+    id: "nature-3",
+    name: "Ocean Waves",
+    thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=300&fit=crop",
+    fullImage: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=800&fit=crop",
+    category: "nature",
   },
   {
-    id: "animals-2",
-    name: "Elephant Family",
-    url: "https://images.unsplash.com/photo-1557050543-4d5f2e07c5d9?w=800&h=800&fit=crop",
-    thumbnail: "https://images.unsplash.com/photo-1557050543-4d5f2e07c5d9?w=200&h=200&fit=crop",
-    category: "animals",
+    id: "nature-4",
+    name: "Sunset Sky",
+    fullImage: "https://images.unsplash.com/photo-1446000649099-aadcb717d36f?w=800&h=800&fit=crop",
+    thumbnail: "https://images.unsplash.com/photo-1446000649099-aadcb717d36f?w=300&h=300&fit=crop",
+    category: "nature",
   },
   {
     id: "abstract-1",
     name: "Colorful Abstract",
-    url: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&h=800&fit=crop",
-    thumbnail: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=200&h=200&fit=crop",
+    thumbnail: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=300&h=300&fit=crop",
+    fullImage: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&h=800&fit=crop",
     category: "abstract",
   },
   {
-    id: "landscapes-1",
+    id: "landscapes-desert",
     name: "Desert Sunset",
-    url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=800&fit=crop",
-    thumbnail: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=200&fit=crop",
+    fullImage: "https://images.unsplash.com/photo-1480004902249-cdb28d6a01a4?w=800&h=800&fit=crop",
+    thumbnail: "https://images.unsplash.com/photo-1480004902249-cdb28d6a01a4?w=300&h=300&fit=crop",
     category: "landscapes",
   },
+
   {
-    id: "landscapes-2",
-    name: "Ocean Waves",
-    url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=800&fit=crop",
-    thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop",
-    category: "landscapes",
-  },
-  {
-    id: "abstract-2",
-    name: "Geometric Patterns",
-    url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=800&fit=crop",
-    thumbnail: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop",
+    id: "animals-toucan",
+    name: "Toucan",
+    thumbnail: "https://images.unsplash.com/photo-1550853024-fae8cd4be47f?w=300&h=300&fit=crop",
+    fullImage: "https://images.unsplash.com/photo-1550853024-fae8cd4be47f?w=800&h=800&fit=crop",
     category: "abstract",
   },
 ];
-
-export const getRandomImage = (): PuzzleImage => {
-  const randomIndex = Math.floor(Math.random() * PUZZLE_IMAGES.length);
-  return PUZZLE_IMAGES[randomIndex];
-};
-
-export const getImagesByCategory = (category: string): PuzzleImage[] => {
-  return PUZZLE_IMAGES.filter((img) => img.category === category);
-};

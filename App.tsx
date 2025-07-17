@@ -4,9 +4,10 @@ import { StatusBar } from "expo-status-bar";
 import firebase from "@react-native-firebase/app";
 import { PuzzleLevel, PuzzleImage } from "./src/data/puzzleData";
 import LevelSelectionScreen from "./src/screens/LevelSelectionScreen";
+import ImageSelectionScreen from "./src/screens/ImageSelectionScreen";
 import GameScreen from "./src/screens/GameScreen";
 
-type AppState = "level-selection" | "game";
+type AppState = "level-selection" | "image-selection" | "game";
 
 export default function App() {
   const [firebaseInitialized, setFirebaseInitialized] = useState(false);
@@ -21,7 +22,6 @@ export default function App() {
         // Check if Firebase is available
         const app = firebase.app();
         setFirebaseInitialized(true);
-        console.log("Firebase is ready");
       } catch (err) {
         console.error("Firebase not available:", err);
         setError("Firebase not configured");
@@ -32,8 +32,12 @@ export default function App() {
     checkFirebase();
   }, []);
 
-  const handleLevelSelected = (level: PuzzleLevel, image: PuzzleImage) => {
+  const handleLevelSelected = (level: PuzzleLevel) => {
     setSelectedLevel(level);
+    setAppState("image-selection");
+  };
+
+  const handleImageSelected = (image: PuzzleImage) => {
     setSelectedImage(image);
     setAppState("game");
   };
@@ -44,10 +48,17 @@ export default function App() {
     setSelectedImage(null);
   };
 
+  const handleBackToImageSelection = () => {
+    setAppState("image-selection");
+    setSelectedImage(null);
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-      {appState === "level-selection" ? <LevelSelectionScreen onLevelSelected={handleLevelSelected} /> : selectedLevel && selectedImage && <GameScreen level={selectedLevel} image={selectedImage} onBack={handleBackToLevelSelection} />}
+      {appState === "level-selection" && <LevelSelectionScreen onLevelSelected={handleLevelSelected} />}
+      {appState === "image-selection" && selectedLevel && <ImageSelectionScreen onImageSelected={handleImageSelected} onBack={handleBackToLevelSelection} />}
+      {appState === "game" && selectedLevel && selectedImage && <GameScreen level={selectedLevel} image={selectedImage} onBack={handleBackToImageSelection} />}
     </View>
   );
 }

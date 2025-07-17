@@ -41,7 +41,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, image, onBack }) => {
 
   const initializeGame = () => {
     // Create image tiles with individual portions
-    const imageTiles = createImageTiles(level, image.url, 800);
+    const imageTiles = createImageTiles(level, image.fullImage, 800);
     const shuffledTiles = shuffleImageTiles(imageTiles, level);
 
     setTiles(shuffledTiles);
