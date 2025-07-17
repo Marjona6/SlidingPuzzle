@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Dimensions } from "react-native";
 import { PuzzleLevel, PuzzleImage } from "../data/puzzleData";
+import { userProgressService } from "../services/userProgressService";
 import { theme } from "../config/theme";
 import { ImageTile, createImageTiles, shuffleImageTiles, isPuzzleComplete } from "../utils/imageUtils";
 import ImageTileComponent from "../components/ImageTile";
@@ -77,6 +78,11 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, image, onBack }) => {
     // Check if puzzle is complete
     if (isPuzzleComplete(newTiles, level)) {
       setIsComplete(true);
+      const completionTime = startTime ? Math.floor((Date.now() - startTime.getTime()) / 1000) : 0;
+
+      // Save user progress
+      userProgressService.updateGameStats(level, image, moves + 1, completionTime);
+
       Alert.alert("Congratulations!", `You solved the ${level.name} puzzle in ${moves + 1} moves!`, [{ text: "New Game", onPress: initializeGame }]);
     }
   };

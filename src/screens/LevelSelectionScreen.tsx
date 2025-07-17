@@ -5,9 +5,10 @@ import { theme } from "../config/theme";
 
 interface LevelSelectionScreenProps {
   onLevelSelected: (level: PuzzleLevel) => void;
+  onShowStatistics: () => void;
 }
 
-const LevelSelectionScreen: React.FC<LevelSelectionScreenProps> = ({ onLevelSelected }) => {
+const LevelSelectionScreen: React.FC<LevelSelectionScreenProps> = ({ onLevelSelected, onShowStatistics }) => {
   const [selectedLevel, setSelectedLevel] = useState<PuzzleLevel | null>(null);
 
   const handleContinue = () => {
@@ -46,6 +47,9 @@ const LevelSelectionScreen: React.FC<LevelSelectionScreenProps> = ({ onLevelSele
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={[styles.continueButton, !selectedLevel && styles.continueButtonDisabled]} onPress={handleContinue} disabled={!selectedLevel}>
           <Text style={styles.continueButtonText}>Continue</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.statsButton} onPress={onShowStatistics}>
+          <Text style={styles.statsButtonText}>Statistics</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -145,6 +149,19 @@ const styles = StyleSheet.create({
   continueButtonText: {
     ...theme.typography.h4,
     color: theme.colors.textInverse,
+  },
+  statsButton: {
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    alignItems: "center",
+    marginTop: theme.spacing.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  statsButtonText: {
+    ...theme.typography.h4,
+    color: theme.colors.textPrimary,
   },
 });
 
